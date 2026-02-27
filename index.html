@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سواری آنلاین افغانستان | Afghan Taxi</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Vazirmatn', sans-serif; }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        }
+        
+        .card-glass {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #e94560 0%, #c23152 100%);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #c23152 0%, #a02040 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(233, 69, 96, 0.4);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #0f3460 0%, #16213e 100%);
+            transition: all 0.3s ease;
+        }
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(15, 52, 96, 0.4);
+        }
+        
+        .map-container {
+            background: linear-gradient(135deg, #e8f4f8 0%, #d1ecf1 50%, #c3e6cb 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .map-dot {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #e94560;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            animation: pulse 2s infinite;
+        }
+        
+        .map-road {
+            position: absolute;
+            background: rgba(100, 100, 100, 0.2);
+            border-radius: 3px;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(233, 69, 96, 0.7); }
+            50% { transform: scale(1.2); box-shadow: 0 0 0 10px rgba(233, 69, 96, 0); }
+        }
+        
+        @keyframes carMove {
+            0% { transform: translateX(0) translateY(0); }
+            25% { transform: translateX(30px) translateY(-15px); }
+            50% { transform: translateX(60px) translateY(0); }
+            75% { transform: translateX(30px) translateY(15px); }
+            100% { transform: translateX(0) translateY(0); }
+        }
+        
+        .car-animation {
+            animation: carMove 8s ease-in-out infinite;
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .slide-up {
+            animation: slideUp 0.5s ease-out forwards;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        
+        .driver-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+        }
+        
+        .driver-card {
+            transition: all 0.3s ease;
+        }
+        
+        .input-field {
+            transition: all 0.3s ease;
+        }
+        .input-field:focus {
+            border-color: #e94560;
+            box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.1);
+        }
+        
+        .tab-active {
+            background: linear-gradient(135deg, #e94560 0%, #c23152 100%);
+            color: white;
+        }
+        
+        .vehicle-option {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .vehicle-option:hover, .vehicle-option.selected {
+            border-color: #e94560;
+            background: rgba(233, 69, 96, 0.05);
+            transform: scale(1.02);
+        }
+        .vehicle-option.selected {
+            box-shadow: 0 4px 15px rgba(233, 69, 96, 0.2);
+        }
+        
+        .status-badge {
+            animation: pulse 2s infinite;
+        }
+        
+        .star-filled { color: #f59e0b; }
+        .star-empty { color: #d1d5db; }
+        
+        .notification {
+            animation: slideDown 0.5s ease-out forwards;
+        }
+        
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-100%); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .hero-pattern {
+            background-image: radial-gradient(circle at 20% 50%, rgba(233, 69, 96, 0.1) 0%, transparent 50%),
+                              radial-gradient(circle at 80% 20%, rgba(15, 52, 96, 0.1) 0%, transparent 50%),
+                              radial-gradient(circle at 50% 80%, rgba(233, 69, 96, 0.05) 0%, transparent 50%);
+        }
+        
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #c23152; border-radius: 3px; }
+        
+        .loading-spinner {
+            border: 3px solid rgba(233, 69, 96, 0.2);
+            border-top: 3px solid #e94560;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+    <!-- Notification Container -->
+    <div id="notification" class="fixed top-4 left-4 right-4 z-50 hidden">
+        <div class="max-w-md mx-auto bg-green-500 text-white px-6 py-4 rounded-2xl shadow-2xl notification flex items-center gap-3">
+            <span class="text-2xl" id="notifIcon">✅</span>
+            <span id="notifText" class="font-medium"></span>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-2xl sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 py-3">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center text-2xl backdrop-blur-sm">
+                        🚕
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold">سواری آنلاین</h1>
+                        <p class="text-xs text-white/70">Afghan Taxi</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="showPage('history')" class="p-2.5 hover:bg-white/10 rounded-xl transition-all" title="تاریخچه">
+                        <span class="text-xl">📋</span>
+                    </button>
+                    <button onclick="showPage('profile')" class="p-2.5 hover:bg-white/10 rounded-xl transition-all" title="پروفایل">
+                        <span class="text-xl">👤</span>
+                    </button>
+                    <button id="loginBtn" onclick="showPage('login')" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-xl text-sm font-medium transition-all backdrop-blur-sm">
+                        ورود
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main id="mainContent" class="max-w-7xl mx-auto px-4 py-6">
+        
+        <!-- Home Page -->
+        <div id="page-home" class="page">
+            <!-- Hero Section -->
+            <div class="gradient-bg rounded-3xl p-8 mb-8 text-white relative overflow-hidden hero-pattern">
+                <div class="relative z-10">
+                    <div class="flex flex-col md:flex-row items-center gap-8">
+                        <div class="flex-1 text-center md:text-right">
+                            <h2 class="text-3xl md:text-4xl font-black mb-4 leading-relaxed">سفر آسان در<br>سراسر افغانستان 🇦🇫</h2>
+                            <p class="text-white/80 text-lg mb-6 leading-relaxed">با امن‌ترین و سریع‌ترین سرویس تکسی آنلاین در کابل و شهرهای بزرگ افغانستان</p>
+                            <button onclick="showPage('booking')" class="btn-primary text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-xl">
+                                🚗 درخواست سواری
+                            </button>
+                        </div>
+                        <div class="flex-1 flex justify-center">
+                            <div class="w-64 h-48 relative car-animation">
+                                <div class="text-8xl">🚕</div>
+                                <div class="absolute -bottom-2 left-0 right-0 h-4 bg-black/10 rounded-full blur-md"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <button onclick="quickBook('کابل')" class="card-glass rounded-2xl p-5 text-center hover:shadow-xl transition-all hover:-translate-y-1">
+                    <div class="text-4xl mb-2">🏙️</div>
+                    <div class="font-bold text-gray-800">کابل</div>
+                    <div class="text-xs text-gray-500 mt-1">پایتخت</div>
+                </button>
+                <button onclick="quickBook('هرات')" class="card-glass rounded-2xl p-5 text-center hover:shadow-xl transition-all hover:-translate-y-1">
+                    <div class="text-4xl mb-2">🕌</div>
+                    <div class="font-bold text-gray-800">هرات</div>
+                    <div class="text-xs text-gray-500 mt-1">شهر باستانی</div>
+                </button>
+                <button onclick="quickBook('مزارشریف')" class="card-glass rounded-2xl p-5 text-center hover:shadow-xl transition-all hover:-translate-y-1">
+                    <div class="text-4xl mb-2">💎</div>
+                    <div class="font-bold text-gray-800">مزار شریف</div>
+                    <div class="text-xs text-gray-500 mt-1">شهر آبی</div>
+                </button>
+                <button onclick="quickBook('قندهار')" class="card-glass rounded-2xl p-5 text-center hover:shadow-xl transition-all hover:-translate-y-1">
+                    <div class="text-4xl mb-2">🏔️</div>
+                    <div class="font-bold text-gray-800">قندهار</div>
+                    <div class="text-xs text-gray-500 mt-1">شهر میوه‌ها</div>
+                </button>
+            </div>
+
+            <!-- Features -->
+            <div class="mb-8">
+                <h3 class="text-2xl font-bold text-gray-800 mb-6 text-center">چرا سواری آنلاین؟</h3>
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="card-glass rounded-2xl p-6 text-center hover:shadow-xl transition-all">
+                        <div class="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4">🔒</div>
+                        <h4 class="font-bold text-lg text-gray-800 mb-2">سفر امن</h4>
+                        <p class="text-gray-600 text-sm">تمام راننده‌ها تایید هویت شده و دارای مجوز رسمی هستند</p>
+                    </div>
+                    <div class="card-glass rounded-2xl p-6 text-center hover:shadow-xl transition-all">
+                        <div class="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4">💰</div>
+                        <h4 class="font-bold text-lg text-gray-800 mb-2">قیمت مناسب</h4>
+                        <p class="text-gray-600 text-sm">نرخ‌های رقابتی به افغانی با محاسبه دقیق مسیر</p>
+                    </div>
+                    <div class="card-glass rounded-2xl p-6 text-center hover:shadow-xl transition-all">
+                        <div class="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4">⚡</div>
+                        <h4 class="font-bold text-lg text-gray-800 mb-2">سریع و آسان</h4>
+                        <p class="text-gray-600 text-sm">در کمتر از ۵ دقیقه راننده در محل شما حاضر می‌شود</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="gradient-bg rounded-3xl p-8 text-white">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+                    <div>
+                        <div class="text-3xl font-black">۵۰۰۰+</div>
+                        <div class="text-white/70 text-sm mt-1">راننده فعال</div>
+                    </div>
+                    <div>
+                        <div class="text-3xl font-black">۳۴</div>
+                        <div class="text-white/70 text-sm mt-1">ولایت</div>
+                    </div>
+                    <div>
+                        <div class="text-3xl font-black">۱M+</div>
+                        <div class="text-white/70 text-sm mt-1">سفر موفق</div>
+                    </div>
+                    <div>
+                        <div class="text-3xl font-black">۴.۸</div>
+                        <div class="text-white/70 text-sm mt-1">امتیاز کاربران</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login Page -->
+        <div id="page-login" class="page hidden">
+            <div class="max-w-md mx-auto slide-up">
+                <div class="card-glass rounded-3xl p-8 shadow-2xl">
+                    <div class="text-center mb-8">
+                        <div class="w-20 h-20 bg-gradient-to-br from-red-500 to-pink-600 rounded-3xl flex items-center justify-center text-4xl mx-auto mb-4 shadow-lg">
+                            🚕
+                        </div>
+                        <h2 class="text-2xl font-bold text-gray-800">خوش آمدید!</h2>
+                        <p class="text-gray-500 mt-2">برای ادامه شماره تلفن خود را وارد کنید</p>
+                    </div>
+
+                    <!-- Login Tabs -->
+                    <div class="flex bg-gray-100 rounded-2xl p-1 mb-6">
+                        <button onclick="switchLoginTab('passenger')" id="tab-passenger" class="flex-1 py-3 rounded-xl font-bold text-sm transition-all tab-active">
+                            🧑 مسافر
+                        </button>
+                        <button onclick="switchLoginTab('driver')" id="tab-driver" class="flex-1 py-3 rounded-xl font-bold text-sm transition-all text-gray-600">
+                            🚗 راننده
+                        </button>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">نام کامل</label>
+                            <input type="text" id="loginName" placeholder="محمد احمدی" 
+                                class="input-field w-full px-4 py-3.5 border-2 border-gray-200 rounded-2xl outline-none text-gray-800 bg-gray-50">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">شماره تلفن</label>
+                            <div class="flex gap-2">
+                                <div class="bg-gray-100 border-2 border-gray-200 rounded-2xl px-4 py-3.5 text-gray-600 font-bold flex items-center gap-1">
+                                    <span>🇦🇫</span>
+                                    <span>+93</span>
+                                </div>
+                                <input type="tel" id="loginPhone" placeholder="۰۷۰ ۱۲۳ ۴۵۶۷" 
+                                    class="input-field flex-1 px-4 py-3.5 border-2 border-gray-200 rounded-2xl outline-none text-gray-800 bg-gray-50" dir="ltr">
+                            </div>
+                        </div>
+                        
+                        <div id="driverFields" class="hidden space-y-4">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">نوع موتر</label>
+                                <select id="carType" class="input-field w-full px-4 py-3.5 border-2 border-gray-200 rounded-2xl outline-none text-gray-800 bg-gray-50">
+                                    <option value="corolla">تویوتا کرولا</option>
+                                    <option value="camry">تویوتا کمری</option>
+                                    <option value="hiace">تویوتا هایس</option>
+                                    <option value="prius">تویوتا پریوس</option>
+                                    <option value="suzuki">سوزوکی</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">پلاک موتر</label>
+                                <input type="text" id="carPlate" placeholder="۱-۲۳۴۵ کابل" 
+                                    class="input-field w-full px-4 py-3.5 border-2 border-gray-200 rounded-2xl outline-none text-gray-800 bg-gray-50">
+                            </div>
+                        </div>
+
+                        <button onclick="login()" class="btn-primary w-full text-white py-4 rounded-2xl font-bold text-lg mt-4">
+                            ورود / ثبت نام
+                        </button>
+                        
+                        <button onclick="showPage('home')" class="w-full text-gray-500 py-3 rounded-2xl font-medium text-sm hover:text-gray-700 transition-all">
+                            بازگشت به صفحه اصلی
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Booking Page -->
+        <div id="page-booking" class="page hidden">
+            <div class="grid md:grid-cols-2 gap-6 slide-up">
+                <!-- Map -->
+                <div class="order-2 md:order-1">
+                    <div class="map-container rounded-3xl h-80 md:h-full min-h-80 shadow-xl relative">
+                        <!-- Fake Map Roads -->
+                        <div class="map-road" style="width:80%; height:3px; top:30%; left:10%; transform: rotate(-5deg);"></div>
+                        <div class="map-road" style="width:60%; height:3px; top:50%; left:20%; transform: rotate(10deg);"></div>
+                        <div class="map-road" style="width:70%; height:3px; top:70%; left:15%; transform: rotate(-3deg);"></div>
+                        <div class="map-road" style="width:3px; height:60%; top:20%; left:40%;"></div>
+                        <div class="map-road" style="width:3px; height:50%; top:25%; left:65%; transform: rotate(8deg);"></div>
+                        
+                        <!-- Taxi icons on map -->
+                        <div class="absolute text-3xl car-animation" style="top: 20%; left: 25%;">🚕</div>
+                        <div class="absolute text-2xl" style="top: 60%; left: 55%; animation: carMove 6s ease-in-out infinite reverse;">🚗</div>
+                        <div class="absolute text-2xl" style="top: 40%; left: 70%; animation: carMove 10s ease-in-out infinite;">🚙</div>
+                        
+                        <!-- User Location -->
+                        <div class="map-dot" id="userDot" style="top: 45%; left: 45%;"></div>
+                        <div class="absolute bg-white px-3 py-1.5 rounded-xl shadow-lg text-xs font-bold" style="top: 38%; left: 38%;">📍 موقعیت شما</div>
+                        
+                        <!-- Destination -->
+                        <div id="destDot" class="hidden">
+                            <div class="map-dot" style="top: 25%; left: 70%; background: #0f3460;"></div>
+                            <div class="absolute bg-white px-3 py-1.5 rounded-xl shadow-lg text-xs font-bold" style="top: 18%; left: 63%;">🏁 مقصد</div>
+                            <!-- Route Line -->
+                            <svg class="absolute inset-0 w-full h-full" style="z-index: 0;">
+                                <line x1="47%" y1="47%" x2="72%" y2="27%" stroke="#e94560" stroke-width="3" stroke-dasharray="8,5" opacity="0.6"/>
+                            </svg>
+                        </div>
+                        
+                        <!-- Map Label -->
+                        <div class="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur-sm rounded-2xl px-4 py-3 text-center">
+                            <p class="text-sm text-gray-600 font-medium">🗺️ نقشه شهر - موقعیت فعلی شما</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Booking Form -->
+                <div class="order-1 md:order-2 space-y-4">
+                    <div class="card-glass rounded-3xl p-6 shadow-xl">
+                        <h3 class="text-xl font-bold text-gray-800 mb-5 flex items-center gap-2">
+                            <span class="text-2xl">📍</span> درخواست سواری
+                        </h3>
+                        
+                        <div class="space-y-4">
+                            <!-- Origin -->
+                            <div class="relative">
+                                <div class="absolute right-4 top-1/2 -translate-y-1/2 w-3 h-3 bg-green-500 rounded-full"></div>
+                                <input type="text" id="origin" placeholder="مبدأ: مثلاً چهارراهی پشتونستان" 
+                                    class="input-field w-full pr-10 pl-4 py-4 border-2 border-gray-200 rounded-2xl outline-none bg-gray-50">
+                            </div>
+                            
+                            <!-- Destination -->
+                            <div class="relative">
+                                <div class="absolute right-4 top-1/2 -translate-y-1/2 w-3 h-3 bg-red-500 rounded-full"></div>
+                                <input type="text" id="destination" placeholder="مقصد: مثلاً میدان هوایی" 
+                                    class="input-field w-full pr-10 pl-4 py-4 border-2 border-gray-200 rounded-2xl outline-none bg-gray-50"
+                                    oninput="updateDestination()">
+                            </div>
+
+                            <!-- Popular Destinations -->
+                            <div>
+                                <p class="text-xs font-bold text-gray-500 mb-2">مقاصد پرطرفدار:</p>
+                                <div class="flex flex-wrap gap-2">
+                                    <button onclick="setDest('میدان هوایی کابل')" class="bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-xl text-xs font-medium transition-all">✈️ میدان هوایی</button>
+                                    <button onclick="setDest('شهر نو')" class="bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-xl text-xs font-medium transition-all">🏢 شهر نو</button>
+                                    <button onclick="setDest('کارته سه')" class="bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-xl text-xs font-medium transition-all">🏘️ کارته سه</button>
+                                    <button onclick="setDest('دارالامان')" class="bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-xl text-xs font-medium transition-all">🏛️ دارالامان</button>
+                                    <button onclick="setDest('پل باغ عمومی')" class="bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-xl text-xs font-medium transition-all">🌳 پل باغ عمومی</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Vehicle Selection -->
+                    <div class="card-glass rounded-3xl p-6 shadow-xl">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4">🚗 نوع موتر را انتخاب کنید</h3>
+                        <div class="space-y-3" id="vehicleOptions">
+                            <div class="vehicle-option border-2 border-gray-200 rounded-2xl p-4 flex items-center gap-4 selected" onclick="selectVehicle(this, 'economy', 80)">
+                                <div class="text-4xl">🚕</div>
+                                <div class="flex-1">
+                                    <div class="font-bold text-gray-800">اقتصادی</div>
+                                    <div class="text-xs text-gray-500">تویوتا کرولا • ۴ نفره</div>
+                                </div>
+                                <div class="text-left">
+                                    <div class="font-black text-lg text-gray-800">۸۰ <span class="text-xs">افغانی</span></div>
+                                    <div class="text-xs text-gray-500">۳-۵ دقیقه</div>
+                                </div>
+                            </div>
+                            <div class="vehicle-option border-2 border-gray-200 rounded-2xl p-4 flex items-center gap-4" onclick="selectVehicle(this, 'comfort', 150)">
+                                <div class="text-4xl">🚙</div>
+                                <div class="flex-1">
+                                    <div class="font-bold text-gray-800">راحت</div>
+                                    <div class="text-xs text-gray-500">تویوتا کمری • ۴ نفره</div>
+                                </div>
+                                <div class="text-left">
+                                    <div class="font-black text-lg text-gray-800">۱۵۰ <span class="text-xs">افغانی</span></div>
+                                    <div class="text-xs text-gray-500">۵-۸ دقیقه</div>
+                                </div>
+                            </div>
+                            <div class="vehicle-option border-2 border-gray-200 rounded-2xl p-4 flex items-center gap-4" onclick="selectVehicle(this, 'vip', 300)">
+                                <div class="text-4xl">🚐</div>
+                                <div class="flex-1">
+                                    <div class="font-bold text-gray-800">VIP</div>
+                                    <div class="text-xs text-gray-500">تویوتا لندکروزر • ۶ نفره</div>
+                                </div>
+                                <div class="text-left">
+                                    <div class="font-black text-lg text-gray-800">۳۰۰ <span class="text-xs">افغانی</span></div>
+                                    <div class="text-xs text-gray-500">۸-۱۲ دقیقه</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Method -->
+                    <div class="card-glass rounded-3xl p-6 shadow-xl">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4">💳 روش پرداخت</h3>
+                        <div class="grid grid-cols-3 gap-3">
+                            <button onclick="selectPayment(this, 'cash')" class="payment-option border-2 border-green-500 bg-green-50 rounded-2xl p-3 text-center transition-all">
+                                <div class="text-2xl mb-1">💵</div>
+                                <div class="text-xs font-bold text-gray-700">نقدی</div>
+                            </button>
+                            <button onclick="selectPayment(this, 'mobile')" class="payment-option border-2 border-gray-200 rounded-2xl p-3 text-center transition-all hover:border-blue-400">
+                                <div class="text-2xl mb-1">📱</div>
+                                <div class="text-xs font-bold text-gray-700">موبایل</div>
+                            </button>
+                            <button onclick="selectPayment(this, 'card')" class="payment-option border-2 border-gray-200 rounded-2xl p-3 text-center transition-all hover:border-purple-400">
+                                <div class="text-2xl mb-1">💳</div>
+                                <div class="text-xs font-bold text-gray-700">کارت</div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Book Button -->
+                    <button onclick="bookRide()" class="btn-primary w-full text-white py-5 rounded-2xl font-bold text-xl shadow-xl flex items-center justify-center gap-3">
+                        <span>درخواست سواری</span>
+                        <span id="priceDisplay" class="bg-white/20 px-4 py-1 rounded-xl">۸۰ افغانی</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Searching Driver Page -->
+        <div id="page-searching" class="page hidden">
+            <div class="max-w-md mx-auto text-center slide-up">
+                <div class="card-glass rounded-3xl p-10 shadow-2xl">
+                    <div class="loading-spinner mx-auto mb-6"></div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-3">در حال جستجوی راننده...</h3>
+                    <p class="text-gray-500 mb-6">لطفاً صبر کنید، در حال یافتن نزدیک‌ترین راننده هستیم</p>
+                    
+                    <div class="bg-gray-50 rounded-2xl p-4 mb-6">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                            <span class="text-sm text-gray-600" id="searchOrigin">مبدأ</span>
+                        </div>
+                        <div class="border-r-2 border-dashed border-gray-300 h-4 mr-1.5"></div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                            <span class="text-sm text-gray-600" id="searchDest">مقصد</span>
+                        </div>
+                    </div>
+
+                    <button onclick="cancelSearch()" class="w-full border-2 border-red-200 text-red-500 py-3 rounded-2xl font-bold hover:bg-red-50 transition-all">
+                        لغو درخواست
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ride Active Page -->
+        <div id="page-ride" class="page hidden">
+            <div class="max-w-lg mx-auto slide-up space-y-4">
+                <!-- Status -->
+                <div class="bg-green-500 text-white rounded-3xl p-5 text-center shadow-xl">
+                    <div class="flex items-center justify-center gap-2 mb-1">
+                        <div class="w-3 h-3 bg-white rounded-full status-badge"></div>
+                        <span class="font-bold text-lg" id="rideStatus">راننده در راه است</span>
+                    </div>
+                    <p class="text-white/80 text-sm" id="rideETA">زمان تخمینی رسیدن: ۴ دقیقه</p>
+                </div>
+
+                <!-- Driver Info -->
+                <div class="card-glass rounded-3xl p-6 shadow-xl">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-16 h-16 bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl flex items-center justify-center text-3xl shadow-lg">
+                            👨
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-bold text-lg text-gray-800" id="driverName">احمد محمدی</h4>
+                            <div class="flex items-center gap-1 text-sm">
+                                <span class="star-filled">★★★★</span><span class="star-empty">★</span>
+                                <span class="text-gray-500 mr-1">۴.۷</span>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1" id="driverCar">تویوتا کرولا سفید • پلاک ۱-۳۴۵۶</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        <button onclick="callDriver()" class="flex-1 bg-green-500 hover:bg-green-600 text-white py-3 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all">
+                            <span>📞</span> تماس
+                        </button>
+                        <button onclick="messageDriver()" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all">
+                            <span>💬</span> پیام
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Trip Details -->
+                <div class="card-glass rounded-3xl p-6 shadow-xl">
+                    <h4 class="font-bold text-gray-800 mb-4">جزئیات سفر</h4>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                            <span class="text-sm text-gray-600" id="rideOrigin"></span>
+                        </div>
+                        <div class="border-r-2 border-dashed border-gray-300 h-6 mr-1.5"></div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                            <span class="text-sm text-gray-600" id="rideDest"></span>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-gray-100 flex justify-between items-center">
+                        <span class="text-gray-500">مبلغ تخمینی</span>
+                        <span class="font-black text-xl text-gray-800" id="rideCost">۸۰ افغانی</span>
+                    </div>
+                </div>
+
+                <!-- Map Preview -->
+                <div class="map-container rounded-3xl h-48 relative shadow-xl">
+                    <div class="map-road" style="width:70%; height:3px; top:40%; left:15%; transform: rotate(5deg);"></div>
+                    <div class="map-road" style="width:50%; height:3px; top:60%; left:25%;"></div>
+                    <div class="absolute text-3xl" style="top: 35%; left: 30%; animation: carMove 4s ease-in-out infinite;">🚕</div>
+                    <div class="map-dot" style="top: 50%; left: 70%;"></div>
+                    <div class="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur-sm rounded-xl px-3 py-2 text-center text-sm text-gray-600 font-medium">
+                        🚕 راننده در حال حرکت به سمت شما
+                    </div>
+                </div>
+
+                <!-- Complete / Cancel -->
+                <div class="flex gap-3">
+                    <button onclick="completeRide()" class="flex-1 btn-primary text-white py-4 rounded-2xl font-bold text-lg">
+                        ✅ پایان سفر
+                    </button>
+                    <button onclick="cancelRide()" class="border-2 border-red-200 text-red-500 px-6 py-4 rounded-2xl font-bold hover:bg-red-50 transition-all">
+                        لغو
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rating Page -->
+        <div id="page-rating" class="page hidden">
+            <div class="max-w-md mx-auto slide-up">
+                <div class="card-glass rounded-3xl p-8 shadow-2xl text-center">
+                    <div class="text-6xl mb-4">🎉</div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">سفر شما تکمیل شد!</h3>
+                    <p class="text-gray-500 mb-6">لطفاً به راننده امتیاز دهید</p>
+
+                    <div class="flex items-center justify-center gap-4 mb-4">
+                        <div class="w-16 h-16 bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl flex items-center justify-center text-3xl">👨</div>
+                        <div class="text-right">
+                            <div class="font-bold text-lg" id="ratingDriverName">احمد محمدی</div>
+                            <div class="text-sm text-gray-500" id="ratingDriverCar">تویوتا کرولا سفید</div>
+                        </div>
+                    </div>
+
+                    <!-- Stars -->
+                    <div class="flex justify-center gap-2 mb-6" id="starsContainer">
+                        <button onclick="setRating(1)" class="text-4xl star-btn star-empty hover:scale-110 transition-transform">★</button>
+                        <button onclick="setRating(2)" class="text-4xl star-btn star-empty hover:scale-110 transition-transform">★</button>
+                        <button onclick="setRating(3)" class="text-4xl star-btn star-empty hover:scale-110 transition-transform">★</button>
+                        <button onclick="setRating(4)" class="text-4xl star-btn star-empty hover:scale-110 transition-transform">★</button>
+                        <button onclick="setRating(5)" class="text-4xl star-btn star-empty hover:scale-110 transition-transform">★</button>
+                    </div>
+
+                    <div class="mb-6">
+                        <textarea id="ratingComment" rows="3" placeholder="نظر شما در مورد سفر (اختیاری)..." 
+                            class="input-field w-full px-4 py-3 border-2 border-gray-200 rounded-2xl outline-none bg-gray-50 resize-none text-sm"></textarea>
+                    </div>
+
+                    <div class="bg-gray-50 rounded-2xl p-4 mb-6 flex justify-between items-center">
+                        <span class="text-gray-500">مبلغ پرداخت شده</span>
+                        <span class="font-black text-2xl text-green-600" id="ratingCost">۸۰ افغانی</span>
+                    </div>
+
+                    <button onclick="submitRating()" class="btn-primary w-full text-white py-4 rounded-2xl font-bold text-lg">
+                        ثبت امتیاز و بازگشت
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Page -->
+        <div id="page-history" class="page hidden">
+            <div class="max-w-2xl mx-auto slide-up">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                        <span>📋</span> تاریخچه سفرها
+                    </h2>
+                    <button onclick="showPage('home')" class="bg-gray-100 hover:bg-gray-200 p-2.5 rounded-xl transition-all">
+                        ✕
+                    </button>
+                </div>
+                <div id="historyList" class="space-y-4">
+                    <!-- Filled dynamically -->
+                </div>
+                <div id="noHistory" class="hidden text-center py-16">
+                    <div class="text-6xl mb-4">🕐</div>
+                    <h3 class="text-xl font-bold text-gray-600 mb-2">هنوز سفری ثبت نشده</h3>
+                    <p class="text-gray-400">بعد از اولین سفر، تاریخچه در اینجا نمایش داده می‌شود</p>
+                    <button onclick="showPage('booking')" class="btn-primary text-white px-6 py-3 rounded-2xl font-bold mt-6">
+                        اولین سفر خود را رزرو کنید
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Page -->
+        <div id="page-profile" class="page hidden">
+            <div class="max-w-md mx-auto slide-up">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                        <span>👤</span> پروفایل
+                    </h2>
+                    <button onclick="showPage('home')" class="bg-gray-100 hover:bg-gray-200 p-2.5 rounded-xl transition-all">
+                        ✕
+                    </button>
+                </div>
+
+                <div id="profileContent">
+                    <div class="card-glass rounded-3xl p-8 shadow-xl text-center">
+                        <div class="text-6xl mb-4">👤</div>
+                        <h3 class="text-xl font-bold text-gray-600 mb-2">هنوز وارد نشده‌اید</h3>
+                        <p class="text-gray-400 mb-6">برای مشاهده پروفایل خود وارد شوید</p>
+                        <button onclick="showPage('login')" class="btn-primary text-white px-8 py-3 rounded-2xl font-bold">
+                            ورود / ثبت نام
+                        </button>
+                    </div>
+                </div>
+
+                <div id="profileLoggedIn" class="hidden space-y-4">
+                    <div class="card-glass rounded-3xl p-6 shadow-xl">
+                        <div class="flex items-center gap-4 mb-6">
+                            <div class="w-20 h-20 bg-gradient-to-br from-red-400 to-pink-600 rounded-3xl flex items-center justify-center text-4xl shadow-lg">
+                                👤
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-xl text-gray-800" id="profileName">-</h3>
+                                <p class="text-gray-500" id="profilePhone">-</p>
+                                <span class="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full" id="profileType">مسافر</span>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-3 gap-4 mb-6">
+                            <div class="bg-gray-50 rounded-2xl p-3 text-center">
+                                <div class="font-black text-xl text-gray-800" id="totalRides">۰</div>
+                                <div class="text-xs text-gray-500">سفرها</div>
+                            </div>
+                            <div class="bg-gray-50 rounded-2xl p-3 text-center">
+                                <div class="font-black text-xl text-gray-800" id="totalSpent">۰</div>
+                                <div class="text-xs text-gray-500">مصرف (افغانی)</div>
+                            </div>
+                            <div class="bg-gray-50 rounded-2xl p-3 text-center">
+                                <div class="font-black text-xl text-gray-800">۴.۹</div>
+                                <div class="text-xs text-gray-500">امتیاز</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-glass rounded-3xl p-6 shadow-xl space-y-3">
+                        <button class="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-2xl transition-all">
+                            <span class="text-xl">📱</span>
+                            <span class="font-medium text-gray-700">تنظیمات اطلاع‌رسانی</span>
+                        </button>
+                        <button class="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-2xl transition-all">
+                            <span class="text-xl">🌐</span>
+                            <span class="font-medium text-gray-700">زبان: دری / پشتو</span>
+                        </button>
+                        <button class="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-2xl transition-all">
+                            <span class="text-xl">❓</span>
+                            <span class="font-medium text-gray-700">پشتیبانی و کمک</span>
+                        </button>
+                        <button class="w-full flex items-center gap-3 p-3 hover:bg-gray-50 rounded-2xl transition-all">
+                            <span class="text-xl">📜</span>
+                            <span class="font-medium text-gray-700">شرایط و قوانین</span>
+                        </button>
+                        <button onclick="logout()" class="w-full flex items-center gap-3 p-3 hover:bg-red-50 rounded-2xl transition-all text-red-500">
+                            <span class="text-xl">🚪</span>
+                            <span class="font-medium">خروج از حساب</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Bottom Navigation (Mobile) -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-2xl md:hidden z-40">
+        <div class="flex justify-around py-2">
+            <button onclick="showPage('home')" class="flex flex-col items-center py-2 px-3 text-gray-500 hover:text-red-500 transition-all" id="nav-home">
+                <span class="text-xl">🏠</span>
+                <span class="text-xs font-medium mt-1">خانه</span>
+            </button>
+            <button onclick="showPage('booking')" class="flex flex-col items-center py-2 px-3 text-gray-500 hover:text-red-500 transition-all" id="nav-booking">
+                <span class="text-xl">🚕</span>
+                <span class="text-xs font-medium mt-1">سواری</span>
+            </button>
+            <button onclick="showPage('history')" class="flex flex-col items-center py-2 px-3 text-gray-500 hover:text-red-500 transition-all" id="nav-history">
+                <span class="text-xl">📋</span>
+                <span class="text-xs font-medium mt-1">تاریخچه</span>
+            </button>
+            <button onclick="showPage('profile')" class="flex flex-col items-center py-2 px-3 text-gray-500 hover:text-red-500 transition-all" id="nav-profile">
+                <span class="text-xl">👤</span>
+                <span class="text-xs font-medium mt-1">پروفایل</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Add padding for mobile nav -->
+    <div class="h-20 md:hidden"></div>
+
+    <script>
+        // ============ STATE ============
+        let currentUser = null;
+        let currentRide = null;
+        let selectedVehicle = 'economy';
+        let selectedPrice = 80;
+        let selectedPayment = 'cash';
+        let rideHistory = [];
+        let currentRating = 0;
+
+        // ============ DRIVERS DATA ============
+        const drivers = [
+            { name: 'احمد محمدی', car: 'تویوتا کرولا سفید', plate: '۱-۳۴۵۶ کابل', rating: 4.7, avatar: '👨' },
+            { name: 'محمود رحیمی', car: 'تویوتا کمری نقره‌ای', plate: '۲-۷۸۹۰ کابل', rating: 4.9, avatar: '👳' },
+            { name: 'عبدالله کریمی', car: 'تویوتا پریوس آبی', plate: '۳-۱۲۳۴ کابل', rating: 4.5, avatar: '🧔' },
+            { name: 'فرهاد نوری', car: 'سوزوکی سوئیفت سفید', plate: '۴-۵۶۷۸ کابل', rating: 4.8, avatar: '👨‍🦱' },
+            { name: 'ناصر حیدری', car: 'تویوتا لندکروزر سیاه', plate: '۵-۹۰۱۲ کابل', rating: 4.6, avatar: '👨‍🦳' },
+        ];
+
+        // ============ PAGE NAVIGATION ============
+        function showPage(pageName) {
+            document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+            const page = document.getElementById('page-' + pageName);
+            if (page) {
+                page.classList.remove('hidden');
+                // Re-trigger animation
+                page.querySelector('.slide-up')?.classList.remove('slide-up');
+                setTimeout(() => page.querySelector(':first-child')?.classList.add('slide-up'), 10);
+            }
+
+            // Update bottom nav
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('text-red-500'));
+            const navBtn = document.getElementById('nav-' + pageName);
+            if (navBtn) navBtn.classList.add('text-red-500');
+
+            // Special page handling
+            if (pageName === 'history') renderHistory();
+            if (pageName === 'profile') renderProfile();
+        }
+
+        // ============ LOGIN ============
+        let loginType = 'passenger';
+
+        function switchLoginTab(type) {
+            loginType = type;
+            document.getElementById('tab-passenger').classList.toggle('tab-active', type === 'passenger');
+            document.getElementById('tab-passenger').classList.toggle('text-gray-600', type !== 'passenger');
+            document.getElementById('tab-driver').classList.toggle('tab-active', type === 'driver');
+            document.getElementById('tab-driver').classList.toggle('text-gray-600', type !== 'driver');
+            document.getElementById('driverFields').classList.toggle('hidden', type !== 'driver');
+        }
+
+        function login() {
+            const name = document.getElementById('loginName').value.trim();
+            const phone = document.getElementById('loginPhone').value.trim();
+
+            if (!name || !phone) {
+                showNotification('لطفاً نام و شماره تلفن را وارد کنید', '⚠️', 'orange');
+                return;
+            }
+
+            currentUser = {
+                name,
+                phone: '+93 ' + phone,
+                type: loginType,
+                carType: document.getElementById('carType')?.value || '',
+                carPlate: document.getElementById('carPlate')?.value || ''
+            };
+
+            document.getElementById('loginBtn').textContent = name;
+            showNotification(`${name} جان، خوش آمدید!`, '🎉', 'green');
+            showPage('home');
+        }
+
+        function logout() {
+            currentUser = null;
+            document.getElementById('loginBtn').textContent = 'ورود';
+            document.getElementById('loginName').value = '';
+            document.getElementById('loginPhone').value = '';
+            showNotification('با موفقیت خارج شدید', '👋', 'blue');
+            showPage('home');
+        }
+
+        // ============ BOOKING ============
+        function quickBook(city) {
+            if (!currentUser) {
+                showNotification('لطفاً ابتدا وارد شوید', '⚠️', 'orange');
+                showPage('login');
+                return;
+            }
+            document.getElementById('origin').value = 'مرکز شهر ' + city;
+            showPage('booking');
+        }
+
+        function setDest(dest) {
+            document.getElementById('destination').value = dest;
+            updateDestination();
+        }
+
+        function updateDestination() {
+            const dest = document.getElementById('destination').value;
+            document.getElementById('destDot').classList.toggle('hidden', !dest);
+        }
+
+        function selectVehicle(el, type, price) {
+            document.querySelectorAll('.vehicle-option').forEach(v => v.classList.remove('selected'));
+            el.classList.add('selected');
+            selectedVehicle = type;
+            selectedPrice = price;
+            document.getElementById('priceDisplay').textContent = toPersianNum(price) + ' افغانی';
+        }
+
+        function selectPayment(el, method) {
+            document.querySelectorAll('.payment-option').forEach(p => {
+                p.classList.remove('border-green-500', 'bg-green-50', 'border-blue-500', 'bg-blue-50', 'border-purple-500', 'bg-purple-50');
+                p.classList.add('border-gray-200');
+            });
+            const colors = {
+                cash: ['border-green-500', 'bg-green-50'],
+                mobile: ['border-blue-500', 'bg-blue-50'],
+                card: ['border-purple-500', 'bg-purple-50']
+            };
+            el.classList.remove('border-gray-200');
+            el.classList.add(...colors[method]);
+            selectedPayment = method;
+        }
+
+        function bookRide() {
+            if (!currentUser) {
+                showNotification('لطفاً ابتدا وارد شوید', '⚠️', 'orange');
+                showPage('login');
+                return;
+            }
+
+            const origin = document.getElementById('origin').value.trim();
+            const destination = document.getElementById('destination').value.trim();
+
+            if (!origin || !destination) {
+                showNotification('لطفاً مبدأ و مقصد را وارد کنید', '⚠️', 'orange');
+                return;
+            }
+
+            currentRide = {
+                origin,
+                destination,
+                vehicle: selectedVehicle,
+                price: selectedPrice,
+                payment: selectedPayment,
+                driver: drivers[Math.floor(Math.random() * drivers.length)],
+                date: new Date().toLocaleDateString('fa-AF'),
+                time: new Date().toLocaleTimeString('fa-AF', { hour: '2-digit', minute: '2-digit' })
+            };
+
+            document.getElementById('searchOrigin').textContent = origin;
+            document.getElementById('searchDest').textContent = destination;
+            showPage('searching');
+
+            // Simulate finding driver
+            setTimeout(() => {
+                showNotification('راننده پیدا شد! 🚕', '✅', 'green');
+                showRideActive();
+            }, 3000);
+        }
+
+        function cancelSearch() {
+            currentRide = null;
+            showNotification('درخواست لغو شد', '❌', 'red');
+            showPage('booking');
+        }
+
+        function showRideActive() {
+            const d = currentRide.driver;
+            document.getElementById('driverName').textContent = d.name;
+            document.getElementById('driverCar').textContent = d.car + ' • پلاک ' + d.plate;
+            document.getElementById('rideOrigin').textContent = currentRide.origin;
+            document.getElementById('rideDest').textContent = currentRide.destination;
+            document.getElementById('rideCost').textContent = toPersianNum(currentRide.price) + ' افغانی';
+            showPage('ride');
+
+            // Simulate status updates
+            setTimeout(() => {
+                document.getElementById('rideStatus').textContent = 'راننده رسید!';
+                document.getElementById('rideETA').textContent = 'لطفاً سوار شوید';
+                showNotification('راننده به محل شما رسید', '📍', 'green');
+            }, 5000);
+
+            setTimeout(() => {
+                document.getElementById('rideStatus').textContent = 'در حال سفر...';
+                document.getElementById('rideETA').textContent = 'زمان تخمینی رسیدن به مقصد: ۱۵ دقیقه';
+            }, 8000);
+        }
+
+        function callDriver() {
+            showNotification('در حال تماس با ' + currentRide.driver.name + '...', '📞', 'green');
+        }
+
+        function messageDriver() {
+            showNotification('پیام به ' + currentRide.driver.name + ' ارسال شد', '💬', 'blue');
+        }
+
+        function cancelRide() {
+            if (confirm('آیا مطمئن هستید که می‌خواهید سفر را لغو کنید؟')) {
+                currentRide = null;
+                showNotification('سفر لغو شد', '❌', 'red');
+                showPage('home');
+            }
+        }
+
+        function completeRide() {
+            // Show rating page
+            document.getElementById('ratingDriverName').textContent = currentRide.driver.name;
+            document.getElementById('ratingDriverCar').textContent = currentRide.driver.car;
+            document.getElementById('ratingCost').textContent = toPersianNum(currentRide.price) + ' افغانی';
+            currentRating = 0;
+            document.querySelectorAll('.star-btn').forEach(s => {
+                s.classList.remove('star-filled');
+                s.classList.add('star-empty');
+            });
+            showPage('rating');
+        }
+
+        // ============ RATING ============
+        function setRating(stars) {
+            currentRating = stars;
+            const btns = document.querySelectorAll('.star-btn');
+            btns.forEach((btn, i) => {
+                if (i < stars) {
+                    btn.classList.remove('star-empty');
+                    btn.classList.add('star-filled');
+                } else {
+                    btn.classList.remove('star-filled');
+                    btn.classList.add('star-empty');
+                }
+            });
+        }
+
+        function submitRating() {
+            if (currentRating === 0) {
+                showNotification('لطفاً امتیاز دهید', '⚠️', 'orange');
+                return;
+            }
+
+            // Save to history
+            rideHistory.unshift({
+                ...currentRide,
+                rating: currentRating,
+                comment: document.getElementById('ratingComment').value,
+                status: 'completed'
+            });
+
+            showNotification('تشکر! امتیاز شما ثبت شد', '⭐', 'green');
+            currentRide = null;
+            document.getElementById('ratingComment').value = '';
+            showPage('home');
+        }
+
+        // ============ HISTORY ============
+        function renderHistory() {
+            const list = document.getElementById('historyList');
+            const noHistory = document.getElementById('noHistory');
+
+            if (rideHistory.length === 0) {
+                list.innerHTML = '';
+                noHistory.classList.remove('hidden');
+                return;
+            }
+
+            noHistory.classList.add('hidden');
+            list.innerHTML = rideHistory.map((ride, i) => `
+                <div class="card-glass rounded-2xl p-5 shadow-lg driver-card">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl flex items-center justify-center text-xl">${ride.driver.avatar}</div>
+                            <div>
+                                <div class="font-bold text-gray-800">${ride.driver.name}</div>
+                                <div class="text-xs text-gray-500">${ride.driver.car}</div>
+                            </div>
+                        </div>
+                        <div class="text-left">
+                            <div class="font-black text-gray-800">${toPersianNum(ride.price)} افغانی</div>
+                            <div class="text-xs text-gray-500">${ride.date}</div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 rounded-xl p-3 space-y-2">
+                        <div class="flex items-center gap-2 text-sm">
+                            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <span class="text-gray-600">${ride.origin}</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm">
+                            <div class="w-2 h-2 bg-red-500 rounded-full"></div>
+                            <span class="text-gray-600">${ride.destination}</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between mt-3">
+                        <div class="flex items-center gap-1">
+                            ${'<span class="star-filled text-sm">★</span>'.repeat(ride.rating)}${'<span class="star-empty text-sm">★</span>'.repeat(5 - ride.rating)}
+                        </div>
+                        <span class="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full">تکمیل شده ✓</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ============ PROFILE ============
+        function renderProfile() {
+            if (currentUser) {
+                document.getElementById('profileContent').classList.add('hidden');
+                document.getElementById('profileLoggedIn').classList.remove('hidden');
+                document.getElementById('profileName').textContent = currentUser.name;
+                document.getElementById('profilePhone').textContent = currentUser.phone;
+                document.getElementById('profileType').textContent = currentUser.type === 'driver' ? 'راننده' : 'مسافر';
+                document.getElementById('totalRides').textContent = toPersianNum(rideHistory.length);
+                const totalSpent = rideHistory.reduce((sum, r) => sum + r.price, 0);
+                document.getElementById('totalSpent').textContent = toPersianNum(totalSpent);
+            } else {
+                document.getElementById('profileContent').classList.remove('hidden');
+                document.getElementById('profileLoggedIn').classList.add('hidden');
+            }
+        }
+
+        // ============ NOTIFICATIONS ============
+        function showNotification(text, icon = '✅', color = 'green') {
+            const notif = document.getElementById('notification');
+            const notifText = document.getElementById('notifText');
+            const notifIcon = document.getElementById('notifIcon');
+            const notifBox = notif.querySelector('div');
+
+            notifText.textContent = text;
+            notifIcon.textContent = icon;
+            
+            notifBox.className = `max-w-md mx-auto text-white px-6 py-4 rounded-2xl shadow-2xl notification flex items-center gap-3`;
+            const colorMap = {
+                green: 'bg-green-500',
+                red: 'bg-red-500',
+                orange: 'bg-orange-500',
+                blue: 'bg-blue-500'
+            };
+            notifBox.classList.add(colorMap[color] || 'bg-green-500');
+
+            notif.classList.remove('hidden');
+            setTimeout(() => notif.classList.add('hidden'), 3000);
+        }
+
+        // ============ HELPERS ============
+        function toPersianNum(num) {
+            const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+            return num.toString().replace(/\d/g, d => persianDigits[d]);
+        }
+
+        // ============ INIT ============
+        showPage('home');
+    </script>
+</body>
+</html>
